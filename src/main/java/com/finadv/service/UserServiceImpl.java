@@ -31,4 +31,15 @@ public class UserServiceImpl implements UserService {
 
 	}
 
+	@Override
+	public User updateUser(User user) {
+		User userInDB = userRepository.findById(user.getId()).orElse(null);
+		if (userInDB != null) {
+			userRepository.save(user);
+			return user;
+		}
+
+		return null;
+	}
+
 }
