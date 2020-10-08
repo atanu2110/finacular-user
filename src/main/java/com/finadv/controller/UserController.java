@@ -1,6 +1,8 @@
 package com.finadv.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,9 +45,12 @@ public class UserController {
 	 * @return
 	 */
 	@GetMapping("/users/{id}")
-	public User showUser(@PathVariable int id) {
-		return userService.getUserById(id);
+	public ResponseEntity<?> showUser(@PathVariable int id) {
 
+		User user = userService.getUserById(id);
+		if (user != null)
+			return new ResponseEntity<>(user, HttpStatus.OK);
+		return new ResponseEntity<>("User id is not present", HttpStatus.NOT_FOUND);
 	}
 
 	/**
@@ -64,10 +69,12 @@ public class UserController {
 	 * @return
 	 */
 	@PutMapping("/users/{id}")
-	public User updateUser(@RequestBody User user, @PathVariable int id) {
+	public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable int id) {
 		user.setId(id);
 		User updatedUser = userService.updateUser(user);
 
-		return updatedUser;
+		if (updatedUser != null)
+			return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+		return new ResponseEntity<>("User id is not present", HttpStatus.NOT_FOUND);
 	}
 }

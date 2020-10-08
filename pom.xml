@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.finadv</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>user</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>finadv-user-services</name>
 	<description>Fin advisor CRUD services for users</description>

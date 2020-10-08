@@ -16,7 +16,7 @@ import javax.persistence.Table;
 public class User {
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
 	@Column(name = "first_name")
@@ -24,6 +24,105 @@ public class User {
 
 	@Column(name = "last_name")
 	private String lastName;
+
+	@Column(name = "second_name")
+	private String secondName;
+
+	@Column(name = "age")
+	private int age;
+
+	@Column(name = "phone")
+	private String phone;
+
+	@Column(name = "email")
+	private String email;
+
+	@Column(name = "is_verified")
+	private boolean isVerified;
+
+	@Column(name = "is_active")
+	private boolean isActive;
+
+	@Column(name = "is_satbleincome")
+	private boolean isStableIncome;
+
+	@Column(name = "is_stayinvested")
+	private boolean isStayInvested;
+
+	@Column(name = "tax_bracket")
+	private int taxBracket;
+
+	public String getSecondName() {
+		return secondName;
+	}
+
+	public void setSecondName(String secondName) {
+		this.secondName = secondName;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public boolean isVerified() {
+		return isVerified;
+	}
+
+	public void setVerified(boolean isVerified) {
+		this.isVerified = isVerified;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	public boolean isStableIncome() {
+		return isStableIncome;
+	}
+
+	public void setStableIncome(boolean isStableIncome) {
+		this.isStableIncome = isStableIncome;
+	}
+
+	public boolean isStayInvested() {
+		return isStayInvested;
+	}
+
+	public void setStayInvested(boolean isStayInvested) {
+		this.isStayInvested = isStayInvested;
+	}
+
+	public int getTaxBracket() {
+		return taxBracket;
+	}
+
+	public void setTaxBracket(int taxBracket) {
+		this.taxBracket = taxBracket;
+	}
 
 	public int getId() {
 		return id;
