@@ -1,6 +1,0 @@
-com\finadv\repository\UserRepository.class
-com\finadv\service\UserService.class
-com\finadv\controller\UserController.class
-com\finadv\entities\User.class
-com\finadv\FinadvUserServicesApplication.class
-com\finadv\service\UserServiceImpl.class

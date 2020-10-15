@@ -45,7 +45,7 @@ public class UserController {
 	 * @return
 	 */
 	@GetMapping("/users/{id}")
-	public ResponseEntity<?> showUser(@PathVariable int id) {
+	public ResponseEntity<?> showUser(@PathVariable Long id) {
 
 		User user = userService.getUserById(id);
 		if (user != null)
@@ -69,7 +69,7 @@ public class UserController {
 	 * @return
 	 */
 	@PutMapping("/users/{id}")
-	public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable int id) {
+	public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable Long id) {
 		user.setId(id);
 		User updatedUser = userService.updateUser(user);
 
