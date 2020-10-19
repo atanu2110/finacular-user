@@ -42,4 +42,13 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 
+	@Override
+	public User getUserByEmailId(String emailId) {
+		User userInDB = userRepository.getUserByEmail(emailId);
+		if (userInDB != null)
+			return userInDB;
+
+		return null;
+	}
+
 }
