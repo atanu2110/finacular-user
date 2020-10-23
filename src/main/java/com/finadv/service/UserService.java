@@ -4,7 +4,7 @@ import com.finadv.entities.User;
 
 public interface UserService {
 
-	User getUserById(Long id);
+	User getUserById(int id);
 	
 	void createUser(User user);
 	

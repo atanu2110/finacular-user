@@ -1,7 +1,5 @@
 package com.finadv.entities;
 
-import lombok.Data;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,12 +13,11 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "USERS")
-@Data
 public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	private int id;
 
 	@Column(name = "first_name")
 	private String firstName;
@@ -54,4 +51,101 @@ public class User {
 
 	@Column(name = "tax_bracket")
 	private int taxBracket;
+
+	public String getSecondName() {
+		return secondName;
+	}
+
+	public void setSecondName(String secondName) {
+		this.secondName = secondName;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public boolean isVerified() {
+		return isVerified;
+	}
+
+	public void setVerified(boolean isVerified) {
+		this.isVerified = isVerified;
+	}
+
+	public boolean isActive() {
+		return isActive;
+	}
+
+	public void setActive(boolean isActive) {
+		this.isActive = isActive;
+	}
+
+	public boolean isStableIncome() {
+		return isStableIncome;
+	}
+
+	public void setStableIncome(boolean isStableIncome) {
+		this.isStableIncome = isStableIncome;
+	}
+
+	public boolean isStayInvested() {
+		return isStayInvested;
+	}
+
+	public void setStayInvested(boolean isStayInvested) {
+		this.isStayInvested = isStayInvested;
+	}
+
+	public int getTaxBracket() {
+		return taxBracket;
+	}
+
+	public void setTaxBracket(int taxBracket) {
+		this.taxBracket = taxBracket;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
 }

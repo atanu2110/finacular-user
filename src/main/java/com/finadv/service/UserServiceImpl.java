@@ -1,6 +1,5 @@
-package com.finadv.service.impl;
+package com.finadv.service;
 
-import com.finadv.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +21,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User getUserById(Long id) {
+	public User getUserById(int id) {
 		return userRepository.findById(id).orElse(null);
 	}
 
