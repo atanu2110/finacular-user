@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.finadv.dto.UserExpenseList;
+import com.finadv.dto.UserInvestmentList;
 import com.finadv.entities.ExpenseCategory;
 import com.finadv.entities.UserExpense;
+import com.finadv.entities.UserInvestment;
 import com.finadv.repository.ExpenseCategoryRepository;
 import com.finadv.repository.ExpenseRepository;
+import com.finadv.repository.InvestmentRepository;
 
 /**
  * @author atanu
@@ -21,6 +24,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 	private ExpenseRepository expenseRepository;
 
+	private InvestmentRepository investmentRepository;
+
 	@Autowired
 	public void setCategoryRepository(ExpenseCategoryRepository categoryRepository) {
 		this.categoryRepository = categoryRepository;
@@ -29,6 +34,11 @@ public class ExpenseServiceImpl implements ExpenseService {
 	@Autowired
 	public void setExpenseRepository(ExpenseRepository expenseRepository) {
 		this.expenseRepository = expenseRepository;
+	}
+
+	@Autowired
+	public void setInvestmentRepository(InvestmentRepository investmentRepository) {
+		this.investmentRepository = investmentRepository;
 	}
 
 	/**
@@ -71,6 +81,35 @@ public class ExpenseServiceImpl implements ExpenseService {
 	public void deleteUserExpense(long expenseId) {
 		expenseRepository.deleteById((int) expenseId);
 
+	}
+
+	@Override
+	public UserInvestmentList getUserInvestment(long userId) {
+
+		UserInvestmentList userInvestmentList = new UserInvestmentList();
+		List<UserInvestment> investList = investmentRepository.findUserInvestmentByUserId(userId);
+		userInvestmentList.setInvestmentList(investList);
+		return userInvestmentList;
+	}
+
+	@Override
+	public void createUserInvestment(UserInvestmentList userInvestmentList) {
+		investmentRepository.saveAll(userInvestmentList.getInvestmentList());	
+	}
+
+	@Override
+	public UserInvestment updateUserInvestment(UserInvestment userInvestment) {
+		UserInvestment userInvestmentInDB = investmentRepository.findById(userInvestment.getInvestmentId()).orElse(null);
+		if (userInvestmentInDB != null) {
+			investmentRepository.save(userInvestment);
+			return userInvestment;
+		}
+		return null;
+	}
+
+	@Override
+	public void deleteUserInvestment(long investmentId) {
+		investmentRepository.deleteById((int) investmentId);
 	}
 
 }
