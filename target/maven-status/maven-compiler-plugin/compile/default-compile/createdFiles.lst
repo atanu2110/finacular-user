@@ -1,6 +1,14 @@
+com\finadv\service\ExpenseService.class
+com\finadv\entities\ExpenseCategory.class
+com\finadv\entities\User.class
+com\finadv\repository\ExpenseRepository.class
+com\finadv\service\UserServiceImpl.class
+com\finadv\controller\ExpenseController.class
+com\finadv\dto\UserExpenseList.class
+com\finadv\entities\UserExpense.class
 com\finadv\repository\UserRepository.class
 com\finadv\service\UserService.class
 com\finadv\controller\UserController.class
-com\finadv\entities\User.class
+com\finadv\service\ExpenseServiceImpl.class
 com\finadv\FinadvUserServicesApplication.class
-com\finadv\service\UserServiceImpl.class
+com\finadv\repository\ExpenseCategoryRepository.class
