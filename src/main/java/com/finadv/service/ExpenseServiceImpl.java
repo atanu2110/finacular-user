@@ -1,13 +1,30 @@
 package com.finadv.service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.finadv.dto.UserExpenseList;
 import com.finadv.dto.UserInvestmentList;
+import com.finadv.entities.AssetInstrument;
+import com.finadv.entities.AssetType;
 import com.finadv.entities.ExpenseCategory;
+import com.finadv.entities.Institution;
+import com.finadv.entities.UserAsset;
+import com.finadv.entities.UserAssets;
 import com.finadv.entities.UserExpense;
 import com.finadv.entities.UserInvestment;
 import com.finadv.repository.ExpenseCategoryRepository;
@@ -20,11 +37,17 @@ import com.finadv.repository.InvestmentRepository;
  */
 @Service
 public class ExpenseServiceImpl implements ExpenseService {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ExpenseServiceImpl.class);
+
 	private ExpenseCategoryRepository categoryRepository;
 
 	private ExpenseRepository expenseRepository;
 
 	private InvestmentRepository investmentRepository;
+
+	@Autowired
+	private RestTemplate restTemplate;
 
 	@Autowired
 	public void setCategoryRepository(ExpenseCategoryRepository categoryRepository) {
@@ -94,12 +117,64 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 	@Override
 	public void createUserInvestment(UserInvestmentList userInvestmentList) {
-		investmentRepository.saveAll(userInvestmentList.getInvestmentList());	
+		investmentRepository.saveAll(userInvestmentList.getInvestmentList());
+
+		// Add investment to user asset
+		// Post call to add asset
+		UserAsset userAsset = new UserAsset();
+		userAsset.setUserId(userInvestmentList.getInvestmentList().get(0).getUserId());
+		List<UserAssets> assets = new ArrayList<UserAssets>();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		try {
+			URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+					+ userInvestmentList.getInvestmentList().get(0).getUserId());
+			for (UserInvestment userInvest : userInvestmentList.getInvestmentList()) {
+				UserAssets userAssets = new UserAssets();
+				userAssets.setUserId(userInvest.getUserId());
+				Institution institution = new Institution();
+				institution.setId(1);
+				userAssets.setAssetProvider(institution);
+
+				AssetType assetType = new AssetType();
+				assetType.setId(4);
+				userAssets.setAssetType(assetType);
+
+				AssetInstrument assetInstrument = new AssetInstrument();
+				assetInstrument.setId(8);
+				userAssets.setAssetInstrument(assetInstrument);
+
+				userAssets.setNickName(userInvest.getInvestmentName());
+				userAssets.setHolderName(userInvest.getAccountName());
+				userAssets.setAmount(userInvest.getInvestmentAmount());
+				userAssets.setExpectedReturn(11);
+
+				userAssets.setCreatedAt(
+						userInvest.getCreatedOn().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+				userAssets.setEquityDebtName(userInvest.getInvestmentOn());
+
+				assets.add(userAssets);
+			}
+			userAsset.setAssets(assets);
+
+			HttpEntity<UserAsset> requestEntity = new HttpEntity<>(userAsset, headers);
+			ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
+			if (responseEntity.getStatusCode() == HttpStatus.OK) {
+				LOG.info("Succssfully created assets for the investments" + responseEntity.getBody());
+			}
+
+		} catch (URISyntaxException e) {
+			LOG.error(e.getMessage());
+		}
+
 	}
 
 	@Override
 	public UserInvestment updateUserInvestment(UserInvestment userInvestment) {
-		UserInvestment userInvestmentInDB = investmentRepository.findById(userInvestment.getInvestmentId()).orElse(null);
+		UserInvestment userInvestmentInDB = investmentRepository.findById(userInvestment.getInvestmentId())
+				.orElse(null);
 		if (userInvestmentInDB != null) {
 			investmentRepository.save(userInvestment);
 			return userInvestment;
