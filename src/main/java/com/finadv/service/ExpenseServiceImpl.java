@@ -9,8 +9,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -118,7 +120,14 @@ public class ExpenseServiceImpl implements ExpenseService {
 	@Override
 	public void createUserInvestment(UserInvestmentList userInvestmentList) {
 		investmentRepository.saveAll(userInvestmentList.getInvestmentList());
-
+		
+		try {
+		//Get all asset type and investment to map the investment type
+		URI uri = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/instruments");
+		ResponseEntity<List<AssetInstrument>> assetInstruments = restTemplate.exchange(uri, HttpMethod.GET, null,
+				new ParameterizedTypeReference<List<AssetInstrument>>() {
+				});
+		LOG.info("Response to get asset Instruments : " + assetInstruments.getStatusCode());
 		// Add investment to user asset
 		// Post call to add asset
 		UserAsset userAsset = new UserAsset();
@@ -128,22 +137,28 @@ public class ExpenseServiceImpl implements ExpenseService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
-		try {
+	
 			URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
 					+ userInvestmentList.getInvestmentList().get(0).getUserId());
 			for (UserInvestment userInvest : userInvestmentList.getInvestmentList()) {
+				// Find asset Type
+				AssetInstrument assetInstrumentType = assetInstruments.getBody().stream()
+						.filter(i -> i.getInstrumentName().equals(userInvest.getInvestmentType())).findAny()
+						.orElse(null);
+
 				UserAssets userAssets = new UserAssets();
 				userAssets.setUserId(userInvest.getUserId());
 				Institution institution = new Institution();
 				institution.setId(1);
 				userAssets.setAssetProvider(institution);
 
+				// Get investment type and instrument
 				AssetType assetType = new AssetType();
-				assetType.setId(4);
+				assetType.setId(assetInstrumentType.getAssetTypeId().getId());
 				userAssets.setAssetType(assetType);
 
 				AssetInstrument assetInstrument = new AssetInstrument();
-				assetInstrument.setId(8);
+				assetInstrument.setId(assetInstrumentType.getId());
 				userAssets.setAssetInstrument(assetInstrument);
 
 				userAssets.setNickName(userInvest.getInvestmentName());
@@ -162,7 +177,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 			HttpEntity<UserAsset> requestEntity = new HttpEntity<>(userAsset, headers);
 			ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
 			if (responseEntity.getStatusCode() == HttpStatus.OK) {
-				LOG.info("Succssfully created assets for the investments" + responseEntity.getBody());
+				LOG.info("Successfully created assets for the investments" + responseEntity.getBody());
 			}
 
 		} catch (URISyntaxException e) {

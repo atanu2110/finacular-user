@@ -13,6 +13,7 @@ com\finadv\repository\InvestmentRepository.class
 com\finadv\service\ExpenseServiceImpl.class
 com\finadv\FinadvUserServicesApplication.class
 com\finadv\entities\AssetType.class
+com\finadv\service\ExpenseServiceImpl$1.class
 com\finadv\entities\UserAssets.class
 com\finadv\entities\User.class
 com\finadv\repository\ExpenseRepository.class

@@ -55,6 +55,9 @@ public class UserInvestment {
 	@Column(name = "created_on")
 	private Date createdOn;
 
+	@Column(name = "investment_type")
+	private String investmentType;
+
 	public int getInvestmentId() {
 		return investmentId;
 	}
@@ -141,6 +144,14 @@ public class UserInvestment {
 
 	public void setCreatedOn(Date createdOn) {
 		this.createdOn = createdOn;
+	}
+
+	public String getInvestmentType() {
+		return investmentType;
+	}
+
+	public void setInvestmentType(String investmentType) {
+		this.investmentType = investmentType;
 	}
 
 }
