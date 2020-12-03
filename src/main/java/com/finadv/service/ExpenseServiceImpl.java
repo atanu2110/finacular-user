@@ -138,7 +138,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 	
-			URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+		//	URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+		URI url = new URI("http://localhost:8081/api/v1/assets/"
 					+ userInvestmentList.getInvestmentList().get(0).getUserId());
 			for (UserInvestment userInvest : userInvestmentList.getInvestmentList()) {
 				// Find asset Type
@@ -164,7 +165,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 				userAssets.setNickName(userInvest.getInvestmentName());
 				userAssets.setHolderName(userInvest.getAccountName());
 				userAssets.setAmount(userInvest.getInvestmentAmount());
-				userAssets.setExpectedReturn(11);
+				userAssets.setExpectedReturn(assetInstrumentType.getDefaultReturns());
 
 				userAssets.setCreatedAt(
 						userInvest.getCreatedOn().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
@@ -199,7 +200,77 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 	@Override
 	public void deleteUserInvestment(long investmentId) {
+		UserInvestment userInvestmentInDB = investmentRepository.findById((int)investmentId)
+				.orElse(null);
 		investmentRepository.deleteById((int) investmentId);
+		// Get user assets and remove the value and record from asset list as well
+
+		URI uri;
+		try {
+			uri = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+					+ userInvestmentInDB.getUserId());
+
+			ResponseEntity<UserAsset> assetList = restTemplate.exchange(uri, HttpMethod.GET, null, UserAsset.class);
+			LOG.info("Response to get asset Instruments : " + assetList.getStatusCode());
+
+			if ("Mutual Fund".equalsIgnoreCase(userInvestmentInDB.getInvestmentType())) {
+				UserAssets userAsset = assetList.getBody().getAssets().stream()
+						.filter(x -> x.getEquityDebtName() != null
+								&& x.getEquityDebtName().equalsIgnoreCase(userInvestmentInDB.getInvestmentOn()))
+						.findFirst().orElse(null);
+				userAsset.setAmount(userAsset.getAmount() - userInvestmentInDB.getInvestmentAmount());
+				//Update user asset with api call
+				updateAsset(userAsset);
+			} else {
+				UserAssets userAsset = assetList.getBody().getAssets().stream()
+						.filter(x -> x.getEquityDebtName() != null
+								&& x.getEquityDebtName().equalsIgnoreCase(userInvestmentInDB.getInvestmentOn())
+								&& x.getAmount() == userInvestmentInDB.getInvestmentAmount())
+						.findFirst().orElse(null);
+
+				// Delete user asset
+				deleteAsset(userAsset.getId());
+			}
+
+		} catch (URISyntaxException e) {
+			LOG.error(e.getMessage());
+		}
+	}
+
+	private void deleteAsset(int assetId) {
+		try {
+			URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+					+ String.valueOf(assetId));
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.DELETE, null, String.class);
+
+			if (responseEntity.getStatusCode() == HttpStatus.OK) {
+				LOG.info("Successfully deleted assets for the investments" + responseEntity.getBody());
+			}
+		} catch (URISyntaxException e) {
+			LOG.error(e.getMessage());
+		}
+
+	}
+
+	private void updateAsset(UserAssets userAsset) {
+		try {
+			URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+					+ String.valueOf(userAsset.getUserId()));
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpEntity<UserAssets> requestEntity = new HttpEntity<>(userAsset, headers);
+
+			ResponseEntity<UserAssets> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity,
+					UserAssets.class);
+
+			if (responseEntity.getStatusCode() == HttpStatus.OK) {
+				LOG.info("Successfully updated assets for the investments" + responseEntity.getBody());
+			}
+		} catch (URISyntaxException e) {
+			LOG.error(e.getMessage());
+		}
+
 	}
 
 }
