@@ -1,10 +1,20 @@
 package com.finadv.service;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import com.finadv.entities.ReferralProgram;
 import com.finadv.entities.User;
+import com.finadv.entities.UserPoints;
+import com.finadv.entities.UserPointsUpdate;
+import com.finadv.repository.ReferralProgramRepository;
+import com.finadv.repository.UserPointsRepository;
 import com.finadv.repository.UserRepository;
+import com.finadv.util.ReferralCode;
+import com.finadv.util.ReferralCodeConfig;
 
 /**
  * @author atanu
@@ -15,9 +25,23 @@ public class UserServiceImpl implements UserService {
 
 	private UserRepository userRepository;
 
+	private ReferralProgramRepository referralProgramRepository;
+
+	private UserPointsRepository userPointsRepository;
+
 	@Autowired
 	public void setUserRepository(UserRepository userRepository) {
 		this.userRepository = userRepository;
+	}
+
+	@Autowired
+	public void setReferralProgramRepository(ReferralProgramRepository referralProgramRepository) {
+		this.referralProgramRepository = referralProgramRepository;
+	}
+
+	@Autowired
+	public void setUserPointsRepository(UserPointsRepository userPointsRepository) {
+		this.userPointsRepository = userPointsRepository;
 	}
 
 	@Override
@@ -26,9 +50,13 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public void createUser(User user) {
+	public User createUser(User user) {
 		userRepository.save(user);
 
+		// Give points for signup
+		initiateUserPoints(user.getEmail());
+		
+		return getUserByEmailId(user.getEmail());
 	}
 
 	@Override
@@ -47,6 +75,87 @@ public class UserServiceImpl implements UserService {
 		User userInDB = userRepository.getUserByEmail(emailId);
 		if (userInDB != null)
 			return userInDB;
+
+		return null;
+	}
+
+	@Override
+	public void createUserReferralCode(ReferralProgram referralProgram) {
+		// Generate referral code
+
+		ReferralCodeConfig config = new ReferralCodeConfig(8, null, null, null, null);
+		String code = ReferralCode.generate(config);
+
+		referralProgram.setReferralCode(code);
+		referralProgram.setCreatedDate(Date.from(java.time.ZonedDateTime.now().toInstant()));
+		referralProgramRepository.save(referralProgram);
+
+		// If referrerCode is present in request then add +100 points for the user as
+		// referral reward
+		// Get user by code
+		if (!StringUtils.isEmpty(referralProgram.getReferrerCode())) {
+			ReferralProgram referredByUser = referralProgramRepository
+					.getCodeByReferralCode(referralProgram.getReferrerCode());
+
+			// Add +100 points for the user
+			UserPointsUpdate updateReferredByUserPoints = new UserPointsUpdate();
+			updateReferredByUserPoints.setPoints(100l);
+			updateReferredByUserPoints.setAction("ADD");
+			updateReferredByUserPoints.setUserId(referredByUser.getUserId());
+			
+			updateUserPoints(updateReferredByUserPoints);
+		}
+
+	}
+
+	/**
+	 *
+	 */
+	@Override
+	public ReferralProgram getCodeByUserId(long userId) {
+		ReferralProgram referralProgram = referralProgramRepository.getCodeByUserId(userId);
+		if (referralProgram != null)
+			return referralProgram;
+		return null;
+	}
+
+	private void initiateUserPoints(String email) {
+		// Get userId from emailId while creation
+		User user = getUserByEmailId(email);
+
+		// Create points for user
+		// Always add +50 points on signup and while record creation
+		UserPoints userPoints = new UserPoints();
+		userPoints.setUserId(user.getId());
+		userPoints.setPoints(50);
+
+		userPointsRepository.save(userPoints);
+	}
+
+	@Override
+	public UserPoints getUserPoints(long userId) {
+		UserPoints userPoints = userPointsRepository.getPointsByUserId(userId);
+		if (userPoints != null)
+			return userPoints;
+
+		return null;
+	}
+
+	@Override
+	public UserPoints updateUserPoints(UserPointsUpdate userPointsUpdate) {
+		UserPoints userPoints = userPointsRepository.getPointsByUserId(userPointsUpdate.getUserId());
+
+		if (userPoints != null) {
+			if ("ADD".equalsIgnoreCase(userPointsUpdate.getAction())) {
+				userPoints.setPoints(userPoints.getPoints() + userPointsUpdate.getPoints());
+			} else if ("REDEEM".equalsIgnoreCase(userPointsUpdate.getAction())) {
+				// Check if points are enough
+				// TODO
+				userPoints.setPoints(userPoints.getPoints() - userPointsUpdate.getPoints());
+			}
+			userPointsRepository.save(userPoints);
+			return userPoints;
+		}
 
 		return null;
 	}

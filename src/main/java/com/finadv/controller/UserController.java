@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.finadv.entities.ReferralProgram;
 import com.finadv.entities.User;
+import com.finadv.entities.UserPoints;
+import com.finadv.entities.UserPointsUpdate;
 import com.finadv.service.UserService;
 
 /**
@@ -56,8 +59,7 @@ public class UserController {
 			return new ResponseEntity<>(user, HttpStatus.OK);
 		return new ResponseEntity<>("User id is not present", HttpStatus.NOT_FOUND);
 	}
-	
-	
+
 	@GetMapping("/users")
 	public ResponseEntity<?> getUserByEmailId(@PathParam(value = "emailId") String emailId) {
 
@@ -66,15 +68,15 @@ public class UserController {
 			return new ResponseEntity<>(user, HttpStatus.OK);
 		return new ResponseEntity<>("User with email is not present", HttpStatus.NOT_FOUND);
 	}
-	
+
 	/**
 	 * @param user
 	 * @return
 	 */
 	@PostMapping("/users")
-	public String createUser(@RequestBody User user) {
-		userService.createUser(user);
-		return "User successfully created";
+	public ResponseEntity<User> createUser(@RequestBody User user) {
+		User createdUser = userService.createUser(user);
+		return new ResponseEntity<>(createdUser, HttpStatus.OK);
 	}
 
 	/**
@@ -91,4 +93,57 @@ public class UserController {
 			return new ResponseEntity<>(updatedUser, HttpStatus.OK);
 		return new ResponseEntity<>("User id is not present", HttpStatus.NOT_FOUND);
 	}
+
+	/**
+	 * @param referralProgram
+	 * @return
+	 */
+	@PostMapping("/users/referral")
+	public String createUserReferralCode(@RequestBody ReferralProgram referralProgram) {
+		userService.createUserReferralCode(referralProgram);
+		return "Referral Code successfully generated !!";
+	}
+
+	/**
+	 * @param userId
+	 * @return referral program
+	 */
+	@GetMapping("/users/referral")
+	public ResponseEntity<?> getCodeByUserId(@PathParam(value = "userId") long userId) {
+
+		ReferralProgram referralProgram = userService.getCodeByUserId(userId);
+		if (referralProgram != null)
+			return new ResponseEntity<>(referralProgram, HttpStatus.OK);
+		return new ResponseEntity<>("Referral Program user not present", HttpStatus.NOT_FOUND);
+	}
+	
+	
+	/**
+	 * @param userPointsUpdate
+	 * @return
+	 */
+	@PutMapping("/users/points")
+	public ResponseEntity<?> updateUserPoints(@RequestBody UserPointsUpdate userPointsUpdate) {
+
+		UserPoints userPoints = userService.updateUserPoints(userPointsUpdate);
+		if (userPoints != null)
+			return new ResponseEntity<>(userPoints, HttpStatus.OK);
+		return new ResponseEntity<>("User points for userId not present", HttpStatus.NOT_FOUND);
+	}
+	
+	
+	
+	/**
+	 * @param userId
+	 * @return
+	 */
+	@GetMapping("/users/points/{userId}")
+	public ResponseEntity<?> getUserPoints(@PathVariable long userId) {
+
+		UserPoints userPoints = userService.getUserPoints(userId);
+		if (userPoints != null)
+			return new ResponseEntity<>(userPoints, HttpStatus.OK);
+		return new ResponseEntity<>("User points for userId not present", HttpStatus.NOT_FOUND);
+	}
+
 }
