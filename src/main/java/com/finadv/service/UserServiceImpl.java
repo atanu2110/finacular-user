@@ -1,5 +1,6 @@
 package com.finadv.service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User createUser(User user) {
+		user.setCreatedAt(LocalDateTime.now());
 		userRepository.save(user);
 
 		// Give points for signup
@@ -153,11 +155,14 @@ public class UserServiceImpl implements UserService {
 				// TODO
 				userPoints.setPoints(userPoints.getPoints() - userPointsUpdate.getPoints());
 			}
-			userPointsRepository.save(userPoints);
-			return userPoints;
-		}
 
-		return null;
+		} else {
+			userPoints = new UserPoints();
+			userPoints.setUserId(userPointsUpdate.getUserId());
+			userPoints.setPoints(userPointsUpdate.getPoints());
+		}
+		userPointsRepository.save(userPoints);
+		return userPoints;
 	}
 
 }

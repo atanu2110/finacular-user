@@ -1,5 +1,7 @@
 package com.finadv.entities;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -51,6 +53,17 @@ public class User {
 
 	@Column(name = "tax_bracket")
 	private int taxBracket;
+
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
 
 	public String getSecondName() {
 		return secondName;
