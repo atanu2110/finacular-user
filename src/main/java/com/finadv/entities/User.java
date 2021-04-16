@@ -57,6 +57,12 @@ public class User {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 
+	@Column(name = "dob")
+	private String dob;
+
+	@Column(name = "gender")
+	private String gender;
+
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
 	}
@@ -159,6 +165,22 @@ public class User {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public String getDob() {
+		return dob;
+	}
+
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
 	}
 
 }

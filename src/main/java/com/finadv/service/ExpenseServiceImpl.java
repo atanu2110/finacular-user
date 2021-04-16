@@ -4,6 +4,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -113,6 +115,7 @@ public class ExpenseServiceImpl implements ExpenseService {
 
 		UserInvestmentList userInvestmentList = new UserInvestmentList();
 		List<UserInvestment> investList = investmentRepository.findUserInvestmentByUserId(userId);
+		Collections.sort(investList, (x, y) -> x.getCreatedOn().compareTo(y.getCreatedOn()));
 		userInvestmentList.setInvestmentList(investList);
 		return userInvestmentList;
 	}
@@ -121,69 +124,67 @@ public class ExpenseServiceImpl implements ExpenseService {
 	public void createUserInvestment(UserInvestmentList userInvestmentList) {
 		investmentRepository.saveAll(userInvestmentList.getInvestmentList());
 		
-		try {
-		//Get all asset type and investment to map the investment type
-		URI uri = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/instruments");
-		ResponseEntity<List<AssetInstrument>> assetInstruments = restTemplate.exchange(uri, HttpMethod.GET, null,
-				new ParameterizedTypeReference<List<AssetInstrument>>() {
-				});
-		LOG.info("Response to get asset Instruments : " + assetInstruments.getStatusCode());
-		// Add investment to user asset
-		// Post call to add asset
-		UserAsset userAsset = new UserAsset();
-		userAsset.setUserId(userInvestmentList.getInvestmentList().get(0).getUserId());
-		List<UserAssets> assets = new ArrayList<UserAssets>();
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-	
-		//	URI url = new URI("http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
-		URI url = new URI("http://localhost:8081/api/v1/assets/"
-					+ userInvestmentList.getInvestmentList().get(0).getUserId());
-			for (UserInvestment userInvest : userInvestmentList.getInvestmentList()) {
-				// Find asset Type
-				AssetInstrument assetInstrumentType = assetInstruments.getBody().stream()
-						.filter(i -> i.getInstrumentName().equals(userInvest.getInvestmentType())).findAny()
-						.orElse(null);
-
-				UserAssets userAssets = new UserAssets();
-				userAssets.setUserId(userInvest.getUserId());
-				Institution institution = new Institution();
-				institution.setId(1);
-				userAssets.setAssetProvider(institution);
-
-				// Get investment type and instrument
-				AssetType assetType = new AssetType();
-				assetType.setId(assetInstrumentType.getAssetTypeId().getId());
-				userAssets.setAssetType(assetType);
-
-				AssetInstrument assetInstrument = new AssetInstrument();
-				assetInstrument.setId(assetInstrumentType.getId());
-				userAssets.setAssetInstrument(assetInstrument);
-
-				userAssets.setNickName(userInvest.getInvestmentName());
-				userAssets.setHolderName(userInvest.getAccountName());
-				userAssets.setAmount(userInvest.getInvestmentAmount());
-				userAssets.setExpectedReturn(assetInstrumentType.getDefaultReturns());
-
-				userAssets.setCreatedAt(
-						userInvest.getCreatedOn().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-				userAssets.setEquityDebtName(userInvest.getInvestmentOn());
-
-				assets.add(userAssets);
-			}
-			userAsset.setAssets(assets);
-
-			HttpEntity<UserAsset> requestEntity = new HttpEntity<>(userAsset, headers);
-			ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
-			if (responseEntity.getStatusCode() == HttpStatus.OK) {
-				LOG.info("Successfully created assets for the investments" + responseEntity.getBody());
-			}
-
-		} catch (URISyntaxException e) {
-			LOG.error(e.getMessage());
-		}
+		//Commenting out as its a One way data investments are controlled from Asset addition
+		/*
+		 * try { //Get all asset type and investment to map the investment type URI uri
+		 * = new URI(
+		 * "http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/instruments"
+		 * ); ResponseEntity<List<AssetInstrument>> assetInstruments =
+		 * restTemplate.exchange(uri, HttpMethod.GET, null, new
+		 * ParameterizedTypeReference<List<AssetInstrument>>() { });
+		 * LOG.info("Response to get asset Instruments : " +
+		 * assetInstruments.getStatusCode()); // Add investment to user asset // Post
+		 * call to add asset UserAsset userAsset = new UserAsset();
+		 * userAsset.setUserId(userInvestmentList.getInvestmentList().get(0).getUserId()
+		 * ); List<UserAssets> assets = new ArrayList<UserAssets>();
+		 * 
+		 * HttpHeaders headers = new HttpHeaders();
+		 * headers.setContentType(MediaType.APPLICATION_JSON);
+		 * 
+		 * 
+		 * // URI url = new URI(
+		 * "http://ec2-13-58-243-251.us-east-2.compute.amazonaws.com:8081/api/v1/assets/"
+		 * URI url = new URI("http://localhost:8081/api/v1/assets/" +
+		 * userInvestmentList.getInvestmentList().get(0).getUserId()); for
+		 * (UserInvestment userInvest : userInvestmentList.getInvestmentList()) { //
+		 * Find asset Type AssetInstrument assetInstrumentType =
+		 * assetInstruments.getBody().stream() .filter(i ->
+		 * i.getInstrumentName().equals(userInvest.getInvestmentType())).findAny()
+		 * .orElse(null);
+		 * 
+		 * UserAssets userAssets = new UserAssets();
+		 * userAssets.setUserId(userInvest.getUserId()); Institution institution = new
+		 * Institution(); institution.setId(1);
+		 * userAssets.setAssetProvider(institution);
+		 * 
+		 * // Get investment type and instrument AssetType assetType = new AssetType();
+		 * assetType.setId(assetInstrumentType.getAssetTypeId().getId());
+		 * userAssets.setAssetType(assetType);
+		 * 
+		 * AssetInstrument assetInstrument = new AssetInstrument();
+		 * assetInstrument.setId(assetInstrumentType.getId());
+		 * userAssets.setAssetInstrument(assetInstrument);
+		 * 
+		 * userAssets.setNickName(userInvest.getInvestmentName());
+		 * userAssets.setHolderName(userInvest.getAccountName());
+		 * userAssets.setAmount(userInvest.getInvestmentAmount());
+		 * userAssets.setExpectedReturn(assetInstrumentType.getDefaultReturns());
+		 * 
+		 * userAssets.setCreatedAt(
+		 * userInvest.getCreatedOn().toInstant().atZone(ZoneId.systemDefault()).
+		 * toLocalDateTime());
+		 * userAssets.setEquityDebtName(userInvest.getInvestmentOn());
+		 * 
+		 * assets.add(userAssets); } userAsset.setAssets(assets);
+		 * 
+		 * HttpEntity<UserAsset> requestEntity = new HttpEntity<>(userAsset, headers);
+		 * ResponseEntity<String> responseEntity = restTemplate.postForEntity(url,
+		 * requestEntity, String.class); if (responseEntity.getStatusCode() ==
+		 * HttpStatus.OK) { LOG.info("Successfully created assets for the investments" +
+		 * responseEntity.getBody()); }
+		 * 
+		 * } catch (URISyntaxException e) { LOG.error(e.getMessage()); }
+		 */
 
 	}
 
