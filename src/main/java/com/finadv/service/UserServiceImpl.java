@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
 	public void createUserReferralCode(ReferralProgram referralProgram) {
 		// Generate referral code
 
-		ReferralCodeConfig config = new ReferralCodeConfig(8, null, null, null, null);
+		ReferralCodeConfig config = new ReferralCodeConfig(6, null, null, null, null);
 		String code = ReferralCode.generate(config);
 
 		referralProgram.setReferralCode(code);
@@ -95,6 +95,7 @@ public class UserServiceImpl implements UserService {
 		// If referrerCode is present in request then add +100 points for the user as
 		// referral reward
 		// Get user by code
+		/*
 		if (!StringUtils.isEmpty(referralProgram.getReferrerCode())) {
 			ReferralProgram referredByUser = referralProgramRepository
 					.getCodeByReferralCode(referralProgram.getReferrerCode());
@@ -107,7 +108,7 @@ public class UserServiceImpl implements UserService {
 			
 			updateUserPoints(updateReferredByUserPoints);
 		}
-
+	*/
 	}
 
 	/**
@@ -116,9 +117,16 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public ReferralProgram getCodeByUserId(long userId) {
 		ReferralProgram referralProgram = referralProgramRepository.getCodeByUserId(userId);
-		if (referralProgram != null)
-			return referralProgram;
-		return null;
+		if (referralProgram == null) {
+			ReferralProgram newReferralProgram = new ReferralProgram();
+			newReferralProgram.setUserId(userId);
+			newReferralProgram.setReferrerCode("");
+			createUserReferralCode(newReferralProgram);
+			referralProgram = referralProgramRepository.getCodeByUserId(userId);
+
+		}
+
+		return referralProgram;
 	}
 
 	private void initiateUserPoints(String email) {
