@@ -108,8 +108,8 @@ public class UserController {
 	 * @param userId
 	 * @return referral program
 	 */
-	@GetMapping("/users/referral")
-	public ResponseEntity<?> getCodeByUserId(@PathParam(value = "userId") long userId) {
+	@GetMapping("/users/referral/{userId}")
+	public ResponseEntity<?> getCodeByUserId(@PathVariable long userId) {
 
 		ReferralProgram referralProgram = userService.getCodeByUserId(userId);
 		if (referralProgram != null)
