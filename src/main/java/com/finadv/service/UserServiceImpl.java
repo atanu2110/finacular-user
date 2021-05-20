@@ -1,6 +1,8 @@
 package com.finadv.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +77,14 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User getUserByEmailId(String emailId) {
 		User userInDB = userRepository.getUserByEmail(emailId);
-		if (userInDB != null)
+		if (userInDB != null) {
+			if (!StringUtils.isEmpty(userInDB.getDob())) {
+				String[] arrOfDOB = userInDB.getDob().split("-");
+				userInDB.setAge(getAge(Integer.parseInt(arrOfDOB[2]), Integer.parseInt(arrOfDOB[1]),
+						Integer.parseInt(arrOfDOB[0])));
+			}
 			return userInDB;
+		}
 
 		return null;
 	}
@@ -171,6 +179,13 @@ public class UserServiceImpl implements UserService {
 		}
 		userPointsRepository.save(userPoints);
 		return userPoints;
+	}
+	
+	private int getAge(int year, int month, int dayOfMonth) {
+	    return Period.between(
+	                LocalDate.of(year, month, dayOfMonth),
+	                LocalDate.now()
+	            ).getYears();
 	}
 
 }
