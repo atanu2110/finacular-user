@@ -55,11 +55,13 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public User createUser(User user) {
 		user.setCreatedAt(LocalDateTime.now());
-		userRepository.save(user);
-
-		// Give points for signup
-		initiateUserPoints(user.getEmail());
-		
+		User userInDB = userRepository.getUserByEmail(user.getEmail());
+		if (userInDB == null) {
+			userRepository.save(user);
+			
+			// Give points for signup
+			initiateUserPoints(user.getEmail());
+		}
 		return getUserByEmailId(user.getEmail());
 	}
 
