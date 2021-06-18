@@ -69,6 +69,7 @@ public class UserServiceImpl implements UserService {
 	public User updateUser(User user) {
 		User userInDB = userRepository.findById(user.getId()).orElse(null);
 		if (userInDB != null) {
+			user.setCreatedAt(userInDB.getCreatedAt());
 			userRepository.save(user);
 			return user;
 		}
