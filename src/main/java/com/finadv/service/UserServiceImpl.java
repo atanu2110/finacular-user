@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.finadv.entities.Notifications;
 import com.finadv.entities.ReferralProgram;
 import com.finadv.entities.User;
 import com.finadv.entities.UserPoints;
@@ -31,6 +32,8 @@ public class UserServiceImpl implements UserService {
 	private ReferralProgramRepository referralProgramRepository;
 
 	private UserPointsRepository userPointsRepository;
+	
+	private NotificationService notificationService;
 
 	@Autowired
 	public void setUserRepository(UserRepository userRepository) {
@@ -45,6 +48,12 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	public void setUserPointsRepository(UserPointsRepository userPointsRepository) {
 		this.userPointsRepository = userPointsRepository;
+	}
+	
+	
+	@Autowired
+	public void setNotificationService(NotificationService notificationService) {
+		this.notificationService = notificationService;
 	}
 
 	@Override
@@ -61,6 +70,7 @@ public class UserServiceImpl implements UserService {
 			
 			// Give points for signup
 			initiateUserPoints(user.getEmail());
+
 		}
 		return getUserByEmailId(user.getEmail());
 	}
@@ -151,6 +161,14 @@ public class UserServiceImpl implements UserService {
 		userPoints.setPoints(50);
 
 		userPointsRepository.save(userPoints);
+
+		// add notification to users
+		Notifications notification = new Notifications();
+		notification.setUserId(user.getId());
+		notification.setTitle("WELCOME TO FINACULAR!");
+		notification.setMessage(
+				"You've taken your first step towards financial freedom.Add assets to find out how to make the most of visit today");
+		notificationService.createUserNotification(notification);
 	}
 
 	@Override
